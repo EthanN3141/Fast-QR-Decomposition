@@ -5,6 +5,8 @@ Known Bugs: None
 
 
 Files:
+    Fast_QR.pdf:
+        provides context, describes implementation, summarizes results of experiments
     randomized_QR.cpp:
         implements all functions involved in the various QR decompositions as well as some linear algebra utility functions
     randomized_QR.h:
@@ -18,34 +20,6 @@ Files:
     Makefile:
         contains the linker commands to compile the program. Run with "make"
 
-Completed:
-    Test of Eigen Parallelization
-    Linalg Infrastructure
-    Construction of the P Matrix
-    GS QR
-    PGS QR
-    HQR
-    PHQR
-    Strong/Weak Scaling both MGS and Householder
-        Standard Parallel QR
-        Compressed QR
-    Performance When k Gets Larger
-    Compared relative error of PMGS and PHQR with increasing problem size
-    Report
-
-
-Notes:
-    Originally I used MGS as I supposed it was already an approximate method and exactness was not much of an issue. 
-    I learned that MGS was not stable enough to provide an accurate solution to the projection problem for all choices of k and n. 
-    Some choices of k and n (eg 5, 500) did not work (rel_error > .5 and sometimes even 1). I think stability degrades for near linear dependence.
-    To attain stability, I had to increase to double precision and use Householder methods for orthogonalization and QR.
-    Using these modifications, I was able to perform all tasks accurately. MGS was only able to do standard QR.
-
-    I started by parallelizing inner products with a reduction. However, this proved to be an issue in my experiments.
-    Because I was using square matrices, the size of the vectors would not greatly exceed 1000 in most cases (as the memory scales
-    quadratically and the time at minimum scales quadratically). This meant that I was creating a mandatory synchronous region for 
-    a comutation that was typically small. The overhead was thus outweighing any benefit of parallelization. I decided to leave 
-    inner product as sequential because of this. 
 
 
 ABOUT EIGEN:
