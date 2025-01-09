@@ -1,0 +1,74 @@
+Project: Parallel QR Decomposition by Random Projections
+Author: Ethan Nanavati
+Last Modified: 12/30/2024
+Known Bugs: None
+
+
+Files:
+    randomized_QR.cpp:
+        implements all functions involved in the various QR decompositions as well as some linear algebra utility functions
+    randomized_QR.h:
+        header file for randomized_QR.cpp
+    main.cpp:
+        driver file for the program. Contains many tests of the functions in randomized_QR.cpp as well as various experiments.
+    plots.py:
+        created the plots used in the reports. Uses data from running main.cpp
+    test_eigen.cpp:
+        runs tests to determine which of Eigen's functions are parallelized and which are not
+    Makefile:
+        contains the linker commands to compile the program. Run with "make"
+
+Completed:
+    Test of Eigen Parallelization
+    Linalg Infrastructure
+    Construction of the P Matrix
+    GS QR
+    PGS QR
+    HQR
+    PHQR
+    Strong/Weak Scaling both MGS and Householder
+        Standard Parallel QR
+        Compressed QR
+    Performance When k Gets Larger
+    Compared relative error of PMGS and PHQR with increasing problem size
+    Report
+
+
+Notes:
+    Originally I used MGS as I supposed it was already an approximate method and exactness was not much of an issue. 
+    I learned that MGS was not stable enough to provide an accurate solution to the projection problem for all choices of k and n. 
+    Some choices of k and n (eg 5, 500) did not work (rel_error > .5 and sometimes even 1). I think stability degrades for near linear dependence.
+    To attain stability, I had to increase to double precision and use Householder methods for orthogonalization and QR.
+    Using these modifications, I was able to perform all tasks accurately. MGS was only able to do standard QR.
+
+    I started by parallelizing inner products with a reduction. However, this proved to be an issue in my experiments.
+    Because I was using square matrices, the size of the vectors would not greatly exceed 1000 in most cases (as the memory scales
+    quadratically and the time at minimum scales quadratically). This meant that I was creating a mandatory synchronous region for 
+    a comutation that was typically small. The overhead was thus outweighing any benefit of parallelization. I decided to leave 
+    inner product as sequential because of this. 
+
+
+ABOUT EIGEN:
+    I did not want to rewrite all the standard linear algebra functions so I am using Eigen. Hopefully this is easy 
+    for you to use, but if not, here are some setup instructions that I found helpful. 
+        wget -O Eigen.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+        extract the zip and identify the folder that contains the folder entitled "Eigen". It should directly contain the file "Dense"
+        add to your compilation command -I "path to Eigen folder"
+
+    EIGEN DOCS:
+        it was tough to find something that would load. The first google results did not work for me. After a while,
+        I found this documentation (https://libeigen.gitlab.io/docs/GettingStarted.html). I hope it is helpful
+
+    EIGEN PARALLEL OPERATIONS:
+        I found that some of the operations in eigen were successfully parallelized, and some were not:
+            Matrix-Vector multiplication was not parallelized
+            Matrix Subtraction was not parallelized
+            Inner Product was not parallelized
+            Vector Normalization was not parallelized
+
+            Vector Outer product was parallelized
+            Matrix-Matrix product was parallelized
+
+        
+        Note that these were just the operations that I tested. To see more detail, see test_eigen.cpp.
+        
